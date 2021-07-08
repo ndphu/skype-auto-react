@@ -33,7 +33,6 @@ out/
 ### VS Code ###
 .vscode/
 go.sum
-go.mod
 
 token
 
