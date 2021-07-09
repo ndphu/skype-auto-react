@@ -59,7 +59,7 @@ func react(workerId string, evt model.MessageEvent, react string) error {
 	log.Println("React: Reacting message", evt.MessageId(), "with", react)
 	rpc, err := broker.NewRpcClient(workerId)
 	if err != nil {
-		log.Println("React: Fail to create RPC client")
+		log.Printf("React: Fail to create RPC client by error %v\n", err)
 		return err
 	}
 
