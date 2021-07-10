@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/ndphu/message-handler-lib/broker"
 	"github.com/ndphu/message-handler-lib/config"
 	"github.com/ndphu/message-handler-lib/handler"
@@ -78,4 +79,7 @@ func NewReactRequest(threadId, messageId, react string) *broker.RpcRequest {
 		Method: "react",
 		Args:   []string{threadId, messageId, react},
 	}
+}
+func wrapAsPreformatted(message string) string {
+	return fmt.Sprintf("<pre raw_pre=\"{code}\" raw_post=\"{code}\">%s</pre>", message)
 }
