@@ -43,3 +43,6 @@ resources*
 workers.json
 
 .consumer_id
+
+rules.json
+
