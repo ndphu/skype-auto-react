@@ -23,26 +23,54 @@ func main() {
 	}
 
 	workerId, consumerId := config.LoadConfig()
-	eventHandler, err := handler.NewEventHandler(handler.EventHandlerConfig{
+	serviceName := "skype-auto-react"
+
+	textHandler, err := handler.NewEventHandler(handler.EventHandlerConfig{
 		WorkerId:            workerId,
 		ConsumerId:          consumerId,
 		ConsumerWorkerCount: 8,
-		ServiceName:         "auto-react",
+		ServiceName:         serviceName,
+		QueueNameOverrideCallback: func() (string, string) {
+			textExchange := "/worker/" + workerId + "/textMessages"
+			textQueueName := "/message-handler/" + serviceName + "/text-queue-" + consumerId
+			return textExchange, textQueueName
+		},
+		RemoveQueue: true,
 	}, func(e model.MessageEvent) {
 		processMessage(e)
 	})
-
 	if err != nil {
-		log.Fatalf("Fail to create handler by error %v\n", err)
+		log.Fatalf("Fail to create text message event handler by error=%v\n", err)
 	}
 
-	eventHandler.Start()
+	textHandler.Start()
+
+	mediaHandler, err := handler.NewEventHandler(handler.EventHandlerConfig{
+		WorkerId:            workerId,
+		ConsumerId:          consumerId,
+		ConsumerWorkerCount: 8,
+		ServiceName:         serviceName,
+		QueueNameOverrideCallback: func() (string, string) {
+			textExchange := "/worker/" + workerId + "/mediaMessages"
+			textQueueName := "/message-handler/" + serviceName + "/media-queue-" + consumerId
+			return textExchange, textQueueName
+		},
+		RemoveQueue: true,
+	}, func(e model.MessageEvent) {
+		processMessage(e)
+	})
+	if err != nil {
+		log.Fatalf("Fail to create media message event handler by error=%v\n", err)
+	}
+
+	mediaHandler.Start()
 
 	termChan := make(chan os.Signal)
 	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 	<-termChan
 	log.Println("Shutdown signal received")
-	eventHandler.Stop()
+	textHandler.Stop()
+	mediaHandler.Stop()
 }
 
 func processMessage(evt model.MessageEvent) {
